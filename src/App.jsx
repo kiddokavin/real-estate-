@@ -77,7 +77,7 @@ export default function App() {
         ...prev
       ]);
     } else {
-      setOtpError('Invalid OTP code. Please check your email inbox for the correct 6-digit code.');
+      setOtpError('Invalid OTP code. Please enter the correct 6-digit code.');
     }
   };
 
@@ -100,7 +100,7 @@ export default function App() {
               Real Estate Due Diligence Agent
             </h1>
             <p className="text-xs text-slate-400">
-              Mandatory Email Registration & Inbox OTP Verification
+              Mandatory Email Registration & OTP Verification
             </p>
           </div>
 
@@ -123,7 +123,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Email Address (OTP will be sent to your Inbox)</label>
+                <label className="block text-slate-300 font-semibold mb-1">Email Address</label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
@@ -182,26 +182,17 @@ export default function App() {
               </button>
             </form>
           ) : (
-            /* Step 2: OTP Verification Screen (Hides OTP Code so user must check Email Inbox!) */
-            <div className="space-y-4 text-center">
+            /* Step 2: Ultra-Clean OTP Input Screen */
+            <div className="space-y-5 text-center">
               
-              <div className="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-left text-xs space-y-1">
-                <div className="flex items-center gap-1.5 text-cyan-400 font-bold">
-                  <Mail className="w-4 h-4" /> Email Dispatched to Inbox!
-                </div>
-                <p className="text-slate-300">
-                  Verification OTP code sent to: <strong className="text-white">{landingData.email}</strong>
-                </p>
-                <p className="text-[11px] text-cyan-300">
-                  Please open your Email Inbox (or Spam folder) to copy the 6-digit OTP.
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-white">Enter Verification OTP</h3>
+                <p className="text-xs text-slate-400">
+                  Enter the 6-digit verification code sent to <span className="text-cyan-400 font-semibold">{landingData.email}</span>
                 </p>
               </div>
 
-              <p className="text-xs text-slate-400">
-                Enter the 6-digit verification code sent to your email:
-              </p>
-
-              <div className="flex justify-center gap-2">
+              <div className="flex justify-center gap-2 py-2">
                 {otpInput.map((digit, idx) => (
                   <input
                     key={idx}
@@ -226,7 +217,7 @@ export default function App() {
               </div>
 
               {otpError && (
-                <div className="text-xs font-semibold text-rose-400 bg-rose-500/10 p-2 rounded-lg border border-rose-500/30">
+                <div className="text-xs font-semibold text-rose-400 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/30">
                   {otpError}
                 </div>
               )}
