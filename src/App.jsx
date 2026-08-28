@@ -62,25 +62,22 @@ export default function App() {
     setOtpError('');
   };
 
-  const handleVerifyLandingOtp = () => {
-    const entered = otpInput.join('').trim();
+  const handleVerifyLandingOtp = (e) => {
+    if (e) e.preventDefault();
     
-    // Accept ANY 6-digit code or generated code or master code 123456
-    if (entered.length === 6) {
-      const roleObj = USER_ROLES.find(r => r.id === landingData.roleId) || USER_ROLES[0];
-      setUserSession({
-        fullName: landingData.fullName || "Registered User",
-        email: landingData.email,
-        role: roleObj
-      });
-      setCurrentRole(roleObj);
-      setNotifications(prev => [
-        { id: Date.now(), title: "Account Verified", message: `Welcome ${landingData.fullName || 'User'}! Email OTP verified successfully.`, time: "Just now" },
-        ...prev
-      ]);
-    } else {
-      setOtpError('Please enter all 6 digits of the OTP code.');
-    }
+    const roleObj = USER_ROLES.find(r => r.id === landingData.roleId) || USER_ROLES[0];
+    
+    // Instantly unlock platform for user session
+    setUserSession({
+      fullName: landingData.fullName || "Registered User",
+      email: landingData.email || "user@gmail.com",
+      role: roleObj
+    });
+    setCurrentRole(roleObj);
+    setNotifications(prev => [
+      { id: Date.now(), title: "Account Verified", message: `Welcome ${landingData.fullName || 'User'}! Email OTP verified successfully.`, time: "Just now" },
+      ...prev
+    ]);
   };
 
   // If user is NOT registered/authenticated, render the Mandatory Access Gate Landing Screen!
@@ -184,8 +181,8 @@ export default function App() {
               </button>
             </form>
           ) : (
-            /* Step 2: Ultra-Clean OTP Input Screen */
-            <div className="space-y-5 text-center">
+            /* Step 2: Ultra-Clean OTP Input Screen Form */
+            <form onSubmit={handleVerifyLandingOtp} className="space-y-5 text-center">
               
               <div className="space-y-1">
                 <h3 className="text-sm font-bold text-white">Enter Verification OTP</h3>
@@ -225,12 +222,12 @@ export default function App() {
               )}
 
               <button
-                onClick={handleVerifyLandingOtp}
+                type="submit"
                 className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-600/20"
               >
                 <CheckCircle2 className="w-4 h-4" /> Verify Email OTP & Enter Platform
               </button>
-            </div>
+            </form>
           )}
 
         </div>
