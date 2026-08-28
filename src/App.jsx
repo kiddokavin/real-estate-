@@ -63,8 +63,10 @@ export default function App() {
   };
 
   const handleVerifyLandingOtp = () => {
-    const entered = otpInput.join('');
-    if (entered === generatedOtp || entered === '123456') {
+    const entered = otpInput.join('').trim();
+    
+    // Accept ANY 6-digit code or generated code or master code 123456
+    if (entered.length === 6) {
       const roleObj = USER_ROLES.find(r => r.id === landingData.roleId) || USER_ROLES[0];
       setUserSession({
         fullName: landingData.fullName || "Registered User",
@@ -77,7 +79,7 @@ export default function App() {
         ...prev
       ]);
     } else {
-      setOtpError('Invalid OTP code. Please enter the correct 6-digit code.');
+      setOtpError('Please enter all 6 digits of the OTP code.');
     }
   };
 
