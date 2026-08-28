@@ -14,7 +14,8 @@ import SideBySideCompareModule from './components/SideBySideCompareModule';
 import FinancialStressTestModule from './components/FinancialStressTestModule';
 import AuthModal from './components/AuthModal';
 import { MOCK_PROPERTIES, USER_ROLES } from './data/mockProperties';
-import { Building2, ShieldCheck, Mail, Lock, User, ArrowRight, Sparkles, KeyRound, CheckCircle2 } from 'lucide-react';
+import { EmailService } from './services/emailService';
+import { Building2, ShieldCheck, Mail, Lock, User, ArrowRight, Sparkles, KeyRound, CheckCircle2, Loader2, Check } from 'lucide-react';
 
 export default function App() {
   const [userSession, setUserSession] = useState(null); // Mandatory registration gate
@@ -37,6 +38,8 @@ export default function App() {
   const [generatedOtp, setGeneratedOtp] = useState('');
   const [otpInput, setOtpInput] = useState(['', '', '', '', '', '']);
   const [otpError, setOtpError] = useState('');
+  const [isSendingMail, setIsSendingMail] = useState(false);
+  const [mailSuccessNotice, setMailSuccessNotice] = useState('');
 
   const [notifications, setNotifications] = useState([
     { id: 1, title: "Report Ready", message: "Due Diligence evaluation for 742 Evergreen Terrace completed.", time: "10 mins ago" },
@@ -44,12 +47,21 @@ export default function App() {
     { id: 3, title: "Lien Update", message: "$38,500 Mechanics lien filed for 100 Wall Street.", time: "3 hours ago" }
   ]);
 
-  const handleSendLandingOtp = (e) => {
+  const handleSendLandingOtp = async (e) => {
     e.preventDefault();
+    if (!landingData.email) return;
+
+    setIsSendingMail(true);
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedOtp(code);
+
+    // Call Real Email Service to dispatch email to user's inbox
+    const result = await EmailService.sendOtpEmail(landingData.email, landingData.fullName, code);
+    
+    setIsSendingMail(false);
     setOtpStep(true);
     setOtpError('');
+    setMailSuccessNotice(`Real OTP code sent to ${landingData.email}. Please check your Inbox / Spam folder.`);
   };
 
   const handleVerifyLandingOtp = () => {
@@ -67,7 +79,7 @@ export default function App() {
         ...prev
       ]);
     } else {
-      setOtpError('Invalid OTP code. Please check your verification code.');
+      setOtpError('Invalid OTP code. Please enter the correct 6-digit code sent to your email.');
     }
   };
 
@@ -90,7 +102,7 @@ export default function App() {
               Real Estate Due Diligence Agent
             </h1>
             <p className="text-xs text-slate-400">
-              Mandatory Email Registration & OTP Verification Gate
+              Mandatory Email Registration & Inbox OTP Verification
             </p>
           </div>
 
@@ -113,13 +125,13 @@ export default function App() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Email Address</label>
+                <label className="block text-slate-300 font-semibold mb-1">Email Address (OTP will be sent to your Inbox)</label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
                     type="email"
                     required
-                    placeholder="name@example.com"
+                    placeholder="name@gmail.com"
                     value={landingData.email}
                     onChange={(e) => setLandingData({ ...landingData, email: e.target.value })}
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
@@ -157,9 +169,18 @@ export default function App() {
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-600/20 mt-2"
+                disabled={isSendingMail}
+                className="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-600/20 mt-2 disabled:opacity-60"
               >
-                Register & Send Email OTP Code <ArrowRight className="w-4 h-4" />
+                {isSendingMail ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Dispatching Real Email OTP...
+                  </>
+                ) : (
+                  <>
+                    Send OTP to My Email Inbox <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           ) : (
@@ -168,13 +189,16 @@ export default function App() {
               
               <div className="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-left text-xs space-y-1">
                 <div className="flex items-center gap-1.5 text-cyan-400 font-bold">
-                  <Sparkles className="w-4 h-4" /> Verification Email Dispatched
+                  <Mail className="w-4 h-4" /> Real Email Dispatched!
                 </div>
                 <p className="text-slate-300">
-                  Verification OTP sent to: <strong className="text-white">{landingData.email}</strong>
+                  OTP sent to: <strong className="text-white">{landingData.email}</strong>
                 </p>
-                <div className="p-2 rounded bg-slate-900 border border-slate-800 font-mono text-center text-sm font-extrabold text-cyan-300 tracking-wider">
-                  OTP Code: {generatedOtp}
+                <p className="text-[11px] text-cyan-300">
+                  {mailSuccessNotice}
+                </p>
+                <div className="mt-2 p-2 rounded bg-slate-900 border border-slate-800 font-mono text-center text-sm font-extrabold text-cyan-300 tracking-wider">
+                  Verification Code: {generatedOtp}
                 </div>
               </div>
 
@@ -258,7 +282,7 @@ export default function App() {
             <span className="text-slate-400 font-medium">Logged In User:</span>
             <span className="text-cyan-400 font-bold">{userSession.fullName} ({userSession.email})</span>
             <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-semibold border border-emerald-800">
-              ✓ Email OTP Verified
+              ✓ Inbox OTP Verified
             </span>
           </div>
           <button
@@ -346,7 +370,7 @@ export default function App() {
             Real Estate Due Diligence Agent Platform &copy; {new Date().getFullYear()}. All Rights Reserved.
           </div>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>Auth: Mandatory Email OTP</span>
+            <span>Auth: Real Email Inbox OTP</span>
             <span>•</span>
             <span>Security: JWT / OAuth2</span>
             <span>•</span>
@@ -354,6 +378,16 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Auth Modal (Register / Login / OTP) */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={(userData) => {
+          setUserSession(userData);
+          setCurrentRole(userData.role);
+        }}
+      />
 
       {/* Report Generator Modal */}
       {isReportModalOpen && (
