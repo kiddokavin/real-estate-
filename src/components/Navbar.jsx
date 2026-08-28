@@ -12,7 +12,9 @@ import {
   Sparkles,
   ScanText,
   GitCompare,
-  Calculator
+  Calculator,
+  UserPlus,
+  UserCheck
 } from 'lucide-react';
 import RoleSwitcher from './RoleSwitcher';
 
@@ -25,7 +27,9 @@ export default function Navbar({
   setCurrentRole,
   unreadNotifications,
   onOpenNotifications,
-  onOpenReportModal
+  onOpenReportModal,
+  userSession,
+  onOpenAuthModal
 }) {
   const navTabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -80,6 +84,25 @@ export default function Navbar({
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
+            
+            {/* User Registration / Login Button */}
+            {userSession ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs font-semibold text-emerald-400">
+                <UserCheck className="w-4 h-4 text-emerald-400" />
+                <span className="hidden sm:inline">{userSession.fullName}</span>
+                <span className="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 text-[10px]">OTP Verified</span>
+              </div>
+            ) : (
+              <button
+                onClick={onOpenAuthModal}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all"
+              >
+                <UserPlus className="w-4 h-4 text-cyan-400" />
+                <span>Register / Sign In</span>
+              </button>
+            )}
+
+            {/* Export Report Quick Trigger */}
             <button
               onClick={onOpenReportModal}
               className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition-all shadow-md shadow-cyan-600/20"
@@ -88,6 +111,7 @@ export default function Navbar({
               Export Report
             </button>
 
+            {/* Notification Bell */}
             <button
               onClick={onOpenNotifications}
               className="relative p-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 transition-all"
@@ -101,6 +125,7 @@ export default function Navbar({
               )}
             </button>
 
+            {/* Role Switcher */}
             <RoleSwitcher currentRole={currentRole} onRoleChange={setCurrentRole} />
           </div>
 

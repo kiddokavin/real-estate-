@@ -12,6 +12,7 @@ import AICopilotModule from './components/AICopilotModule';
 import TitleDeedOCRModule from './components/TitleDeedOCRModule';
 import SideBySideCompareModule from './components/SideBySideCompareModule';
 import FinancialStressTestModule from './components/FinancialStressTestModule';
+import AuthModal from './components/AuthModal';
 import { MOCK_PROPERTIES, USER_ROLES } from './data/mockProperties';
 
 export default function App() {
@@ -21,12 +22,23 @@ export default function App() {
   const [currentRole, setCurrentRole] = useState(USER_ROLES[0]);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [userSession, setUserSession] = useState(null);
 
   const [notifications, setNotifications] = useState([
     { id: 1, title: "Report Ready", message: "Due Diligence evaluation for 742 Evergreen Terrace completed.", time: "10 mins ago" },
     { id: 2, title: "Risk Flag", message: "FEMA Zone VE flood hazard detected for 450 Ocean Drive.", time: "1 hour ago" },
     { id: 3, title: "Lien Update", message: "$38,500 Mechanics lien filed for 100 Wall Street.", time: "3 hours ago" }
   ]);
+
+  const handleAuthSuccess = (userData) => {
+    setUserSession(userData);
+    setCurrentRole(userData.role);
+    setNotifications((prev) => [
+      { id: Date.now(), title: "Account Verified", message: `Welcome ${userData.fullName}! Email OTP verified successfully.`, time: "Just now" },
+      ...prev
+    ]);
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -42,6 +54,8 @@ export default function App() {
         unreadNotifications={notifications.length}
         onOpenNotifications={() => setIsNotificationOpen(true)}
         onOpenReportModal={() => setIsReportModalOpen(true)}
+        userSession={userSession}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -50,8 +64,13 @@ export default function App() {
         {/* Active Role Indicator Banner */}
         <div className="mb-4 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400">Active View Context:</span>
+            <span className="text-slate-400 font-medium">Active Session:</span>
             <span className="text-cyan-400 font-bold">{currentRole.name} Mode</span>
+            {userSession && (
+              <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-semibold border border-emerald-800">
+                Verified: {userSession.email}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1 overflow-x-auto text-[10px] text-slate-400">
             {currentRole.permissions.map((perm, idx) => (
@@ -139,7 +158,7 @@ export default function App() {
             Real Estate Due Diligence Agent Platform &copy; {new Date().getFullYear()}. All Rights Reserved.
           </div>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>AI: LLM Copilot & OCR</span>
+            <span>Auth: Email OTP Verified</span>
             <span>•</span>
             <span>Security: JWT / OAuth2</span>
             <span>•</span>
@@ -147,6 +166,13 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Auth Modal (Register / Login / OTP) */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
 
       {/* Report Generator Modal */}
       {isReportModalOpen && (
