@@ -39,7 +39,6 @@ export default function App() {
   const [otpInput, setOtpInput] = useState(['', '', '', '', '', '']);
   const [otpError, setOtpError] = useState('');
   const [isSendingMail, setIsSendingMail] = useState(false);
-  const [mailSuccessNotice, setMailSuccessNotice] = useState('');
 
   const [notifications, setNotifications] = useState([
     { id: 1, title: "Report Ready", message: "Due Diligence evaluation for 742 Evergreen Terrace completed.", time: "10 mins ago" },
@@ -56,12 +55,11 @@ export default function App() {
     setGeneratedOtp(code);
 
     // Call Real Email Service to dispatch email to user's inbox
-    const result = await EmailService.sendOtpEmail(landingData.email, landingData.fullName, code);
+    await EmailService.sendOtpEmail(landingData.email, landingData.fullName, code);
     
     setIsSendingMail(false);
     setOtpStep(true);
     setOtpError('');
-    setMailSuccessNotice(`Real OTP code sent to ${landingData.email}. Please check your Inbox / Spam folder.`);
   };
 
   const handleVerifyLandingOtp = () => {
@@ -79,7 +77,7 @@ export default function App() {
         ...prev
       ]);
     } else {
-      setOtpError('Invalid OTP code. Please enter the correct 6-digit code sent to your email.');
+      setOtpError('Invalid OTP code. Please check your email inbox for the correct 6-digit code.');
     }
   };
 
@@ -131,7 +129,7 @@ export default function App() {
                   <input
                     type="email"
                     required
-                    placeholder="name@gmail.com"
+                    placeholder="2007kavinl@gmail.com"
                     value={landingData.email}
                     onChange={(e) => setLandingData({ ...landingData, email: e.target.value })}
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
@@ -174,7 +172,7 @@ export default function App() {
               >
                 {isSendingMail ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Dispatching Real Email OTP...
+                    <Loader2 className="w-4 h-4 animate-spin" /> Sending Email OTP...
                   </>
                 ) : (
                   <>
@@ -184,26 +182,23 @@ export default function App() {
               </button>
             </form>
           ) : (
-            /* Step 2: OTP Verification Screen */
+            /* Step 2: OTP Verification Screen (Hides OTP Code so user must check Email Inbox!) */
             <div className="space-y-4 text-center">
               
               <div className="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-left text-xs space-y-1">
                 <div className="flex items-center gap-1.5 text-cyan-400 font-bold">
-                  <Mail className="w-4 h-4" /> Real Email Dispatched!
+                  <Mail className="w-4 h-4" /> Email Dispatched to Inbox!
                 </div>
                 <p className="text-slate-300">
-                  OTP sent to: <strong className="text-white">{landingData.email}</strong>
+                  Verification OTP code sent to: <strong className="text-white">{landingData.email}</strong>
                 </p>
                 <p className="text-[11px] text-cyan-300">
-                  {mailSuccessNotice}
+                  Please open your Email Inbox (or Spam folder) to copy the 6-digit OTP.
                 </p>
-                <div className="mt-2 p-2 rounded bg-slate-900 border border-slate-800 font-mono text-center text-sm font-extrabold text-cyan-300 tracking-wider">
-                  Verification Code: {generatedOtp}
-                </div>
               </div>
 
               <p className="text-xs text-slate-400">
-                Enter the 6-digit verification code below:
+                Enter the 6-digit verification code sent to your email:
               </p>
 
               <div className="flex justify-center gap-2">
